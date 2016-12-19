@@ -1,47 +1,64 @@
+#include <MsTimer2.h>
+
+
 #define BAUDRATE 115200
 #define LOOP_PERIOD_MS 20
-#define LOOP_PERIOD_MICROS 20000
+#define PWM_CTRL_PERIOD 1
 
 #define MAX_BULB_NUM 5
 
 #define ROW 5
 #define COLUMN 8
 
-int ids[MAX_BULB_NUM];
+int id[MAX_BULB_NUM];
+int duty[MAX_BULB_NUM];
 
-
-// duty : 0.0 ~ 1.0
-void oneCyclePwmCtrl(int *_ids, int _num, float _duty)
+// duty : 0 ~ LOOP_PERIOD_MS
+void pwmCtrl()
 {
-  int time_on = LOOP_PERIOD_MICROS * _duty;
-  int time_off = LOOP_PERIOD_MICROS - time_on;
-  if(time_on > 0){
-    for(int i = 0; i < _num; i++)
+    static int cnt = 0;
+
+    for(int i = 0; i < MAX_BULB_NUM; i++)
     {
-      digitalWrite(_ids[i], HIGH);
+        if(cnt < duty[i])
+        {
+            digitalWrite(id[i], HIGH);
+        }
+        else
+        {
+            digitalWrite(id[i], LOW);
+        }
     }
-    delayMicroseconds(time_on);
-    for(int i = 0; i < _num; i++)
-    {
-      digitalWrite(_ids[i], LOW);
-    }
-    delayMicroseconds(time_off);
-  }
+
+    cnt++;
+    if(cnt == LOOP_PERIOD_MS)
+        cnt = 0;
 }
 
 void setup() {
-  Serial.begin(BAUDRATE);
-  randomSeed(analogRead(0));
+    Serial.begin(BAUDRATE);
+    pinMode(2, OUTPUT);
+    pinMode(3, OUTPUT);
+    pinMode(4, OUTPUT);
+    pinMode(5, OUTPUT);
+    pinMode(6, OUTPUT);
 
+    id[0] = 2;
+    id[1] = 3;
+    id[2] = 4;
+    id[3] = 5;
+    id[4] = 6;
+
+    duty[0] = 0;
+    duty[1] = 3;
+    duty[2] = 8;
+    duty[3] = 15;
+    duty[4] = 20;
+
+    MsTimer2::set(PWM_CTRL_PERIOD, pwmCtrl);
+    MsTimer2::start();
   //TODO setup GPIO
 }
 
 void loop() {
-  //if(sensor){
-  if(true){
-    int row = random(ROW);
-    int column = random(COLUMN);
-
-  }
-
 }
