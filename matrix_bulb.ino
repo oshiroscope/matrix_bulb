@@ -1,17 +1,21 @@
+#include <TimerOne.h>
 #include <MsTimer2.h>
 
 
 #define BAUDRATE 115200
 #define LOOP_PERIOD_MS 20
 #define PWM_CTRL_PERIOD 1
+#define LIGHT_CTRL_PERIOD_MICROS 500000
 
-#define MAX_BULB_NUM 5
+#define MAX_BULB_NUM 30
+#define INITIAL_ID 2
 
 #define ROW 5
 #define COLUMN 8
 
 int id[MAX_BULB_NUM];
 int duty[MAX_BULB_NUM];
+
 
 // duty : 0 ~ LOOP_PERIOD_MS
 void pwmCtrl()
@@ -35,27 +39,30 @@ void pwmCtrl()
         cnt = 0;
 }
 
+void lightCtrl()
+{
+    for(int i = INITIAL_ID; i < INITIAL_ID + MAX_BULB_NUM; i++)
+    {
+        duty[i - INITIAL_ID] = random(0, LOOP_PERIOD_MS);
+    }
+}
+
 void setup() {
     Serial.begin(BAUDRATE);
-    pinMode(2, OUTPUT);
-    pinMode(3, OUTPUT);
-    pinMode(4, OUTPUT);
-    pinMode(5, OUTPUT);
-    pinMode(6, OUTPUT);
+    randomSeed(analogRead(0));
 
-    id[0] = 2;
-    id[1] = 3;
-    id[2] = 4;
-    id[3] = 5;
-    id[4] = 6;
+    for(int i = INITIAL_ID; i < INITIAL_ID + MAX_BULB_NUM; i++)
+    {
+        pinMode(i, OUTPUT);
+        id[i - INITIAL_ID] = i;
+        duty[i - INITIAL_ID] = random(0, LOOP_PERIOD_MS);
+    }
 
-    duty[0] = 0;
-    duty[1] = 3;
-    duty[2] = 8;
-    duty[3] = 15;
-    duty[4] = 20;
+    Timer1.initialize(LIGHT_CTRL_PERIOD_MICROS);
+    Timer1.attachInterrupt(lightCtrl);
 
     MsTimer2::set(PWM_CTRL_PERIOD, pwmCtrl);
+    //MsTimer2::set(LIGHT_CTRL_PERIOD, lightCtrl);
     MsTimer2::start();
   //TODO setup GPIO
 }
