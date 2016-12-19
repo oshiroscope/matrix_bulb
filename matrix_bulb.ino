@@ -15,7 +15,12 @@
 
 int id[MAX_BULB_NUM];
 int duty[MAX_BULB_NUM];
+int life[MAX_BULB_NUM];
 
+int pickRandom()
+{
+    random(INITIAL_ID, INITIAL_ID + MAX_BULB_NUM - 1);
+}
 
 // duty : 0 ~ LOOP_PERIOD_MS
 void pwmCtrl()
@@ -39,12 +44,23 @@ void pwmCtrl()
         cnt = 0;
 }
 
+
+bool flag = false; // TODO swap with sensor
 void lightCtrl()
 {
-    for(int i = INITIAL_ID; i < INITIAL_ID + MAX_BULB_NUM; i++)
+    //select the id with the least life
+    id[0] = pickRandom;
+
+    int cnt = 0;
+    while(1)
     {
-        duty[i - INITIAL_ID] = random(0, LOOP_PERIOD_MS);
+        int max_cnt = 13;
+        duty[0] = 20;
+        delay(20);
+        cnt++;
+        if(cnt == max_cnt) break;
     }
+    duty[0] = 0;
 }
 
 void setup() {
@@ -55,7 +71,6 @@ void setup() {
     {
         pinMode(i, OUTPUT);
         id[i - INITIAL_ID] = i;
-        duty[i - INITIAL_ID] = random(0, LOOP_PERIOD_MS);
     }
 
     Timer1.initialize(LIGHT_CTRL_PERIOD_MICROS);
