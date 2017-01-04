@@ -32,44 +32,68 @@ public:
 Bulb bulbs[MAX_BULB_NUM];
 
 // duty : 0.0 ~ 1.0
-void oneCyclePwmCtrl(Bulb *_bulbs, int _num, float _duty)
+void oneCyclePwmCtrl(Bulb *_bulbs, float _first_duty, float _second_duty)
 {
-  Serial.println(_duty);
+  Serial.print(_first_duty); Serial.print("\t"); Serial.print(_second_duty); Serial.print("\t");
+  int first_time_on = LOOP_PERIOD_MICROS * _first_duty;
+  int first_time_off = LOOP_PERIOD_MICROS - first_time_on;
 
-  int time_on = LOOP_PERIOD_MICROS * _duty;
-  int time_off = LOOP_PERIOD_MICROS - time_on;
-  if(time_on > 0){
-    for(int i = 0; i < _num; i++)
+  int second_time_on = LOOP_PERIOD_MICROS * _second_duty;
+  int second_time_off = LOOP_PERIOD_MICROS - second_time_on;
+
+  Serial.print(first_time_on ); Serial.print("\t"); Serial.print(second_time_on); Serial.print("\t");
+  Serial.print("\n");
+
+  for(int i = 0; i < MAX_BULB_NUM; i++)
+  {
+    if(_bulbs[i].state != OFF)
     {
-      // Serial.print(_bulbs[i].row);
-      // Serial.print("\t");
-      // Serial.print(_bulbs[i].col);
-      // Serial.print("\t");
-      // Serial.print(_bulbs[i].getId());
-      // Serial.println();
-
       digitalWrite(_bulbs[i].getId(), HIGH);
     }
-    //delayMicroseconds(time_on);
-    delay(time_on / 1000);
-    for(int i = 0; i < _num; i++)
+    else
     {
       digitalWrite(_bulbs[i].getId(), LOW);
     }
-    //delayMicroseconds(time_off);
-    delay(time_off / 1000);
   }
-}
 
-void light(Bulb *_bulbs, int _num)
-{
-  int cnt = 0;
-  while(1)
+  if(second_time_on < 16383)
   {
-    oneCyclePwmCtrl(_bulbs, _num, duty_table[cnt]);
-    cnt++;
-    if(cnt == 500)
-      break;
+    delayMicroseconds(second_time_on);
+  }
+  else{
+    delay(second_time_on / 1000);
+  }
+
+  for(int i = 0; i < MAX_BULB_NUM; i++)
+  {
+    if(_bulbs[i].state == SECOND)
+    {
+      digitalWrite(_bulbs[i].getId(), LOW);
+    }
+  }
+
+  if((first_time_on - second_time_on) < 16383)
+  {
+    delayMicroseconds(first_time_on - second_time_on);
+  }
+  else{
+    delay((first_time_on - second_time_on) / 1000);
+  }
+
+  delay((first_time_on - second_time_on) / 1000);
+  for(int i = 0; i < MAX_BULB_NUM; i++)
+  {
+    if(_bulbs[i].state == FIRST){
+      digitalWrite(_bulbs[i].getId(), LOW);
+    }
+  }
+
+  if(first_time_off < 16383)
+  {
+    delayMicroseconds(first_time_off);
+  }
+  else{
+    delay(first_time_off / 1000);
   }
 }
 
@@ -93,10 +117,44 @@ void loop() {
   //if(sensor){
   if(true){
     int row = random(ROW);
-    int column = random(COLUMN);
+    int col = random(COLUMN);
     bulbs[0].row = row;
-    bulbs[0].col = column;
-    light(bulbs, 1);
-  }
+    bulbs[0].col = col;
+    bulbs[0].state = FIRST;
 
+    row = random(ROW);
+    col = random(COLUMN);
+    bulbs[1].row = row;
+    bulbs[1].col = col;
+    bulbs[1].state = SECOND;
+
+    int cnt = 0;
+    while(1)
+    {
+      while(1)
+      {
+        oneCyclePwmCtrl(bulbs, duty_table[cnt], duty_table[cnt + DUTY_TABLE_SIZE / 2]);
+        cnt++;
+        if(cnt == DUTY_TABLE_SIZE / 2)
+        {
+          cnt = 0;
+          bulbs[0].state = SECOND;
+          bulbs[1].state = FIRST;
+          break;
+        }
+      }
+      while(1)
+      {
+        oneCyclePwmCtrl(bulbs, duty_table[cnt], duty_table[cnt + DUTY_TABLE_SIZE / 2]);
+        cnt++;
+        if(cnt == DUTY_TABLE_SIZE / 2)
+        {
+          cnt = 0;
+          bulbs[0].state = FIRST;
+          bulbs[1].state = SECOND;
+          break;
+        }
+      }
+    }
+  }
 }
