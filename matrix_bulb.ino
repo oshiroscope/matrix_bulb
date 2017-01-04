@@ -7,22 +7,30 @@
 #define ROW 3
 #define COLUMN 10
 
-struct Pos
+enum BulbState
+{
+  OFF = 0,
+  FIRST = 1,
+  SECOND = 2
+};
+
+class Bulb
 {
 public:
   int col;
   int row;
+  BulbState state;
+
+  int getId()
+  {
+    return col + row * COLUMN + 2;
+  }
 };
 
-int pos2Id(Pos pos)
-{
-  return pos.col + pos.row * COLUMN + 2;
-}
-
-Pos bulbs[MAX_BULB_NUM];
+Bulb bulbs[MAX_BULB_NUM];
 
 // duty : 0.0 ~ 1.0
-void oneCyclePwmCtrl(Pos *_bulbs, int _num, float _duty)
+void oneCyclePwmCtrl(Bulb *_bulbs, int _num, float _duty)
 {
   Serial.println(_duty);
 
@@ -35,23 +43,23 @@ void oneCyclePwmCtrl(Pos *_bulbs, int _num, float _duty)
       Serial.print("\t");
       Serial.print(_bulbs[i].col);
       Serial.print("\t");
-      Serial.print(pos2Id(_bulbs[i]));
+      Serial.print(_bulbs[i].getId());
       Serial.println();
 
-      digitalWrite(pos2Id(_bulbs[i]), HIGH);
+      digitalWrite(_bulbs[i].getId(), HIGH);
     }
     //delayMicroseconds(time_on);
     delay(time_on / 1000);
     for(int i = 0; i < _num; i++)
     {
-      digitalWrite(pos2Id(_bulbs[i]), LOW);
+      digitalWrite(_bulbs[i].getId(), LOW);
     }
     //delayMicroseconds(time_off);
     delay(time_off / 1000);
   }
 }
 
-void light(Pos *_bulbs, int _num)
+void light(Bulb *_bulbs, int _num)
 {
   int cnt = 0;
   while(1)
@@ -85,7 +93,6 @@ void light(Pos *_bulbs, int _num)
       break;
     }
   }
-
 }
 
 void setup() {
@@ -96,10 +103,10 @@ void setup() {
   {
     for(int j = 0; j < ROW; j++)
     {
-      Pos p;
-      p.col = i;
-      p.row = j;
-      pinMode(pos2Id(p), OUTPUT);
+      Bulb b;
+      b.col = i;
+      b.row = j;
+      pinMode(b.getId(), OUTPUT);
     }
   }
 }
