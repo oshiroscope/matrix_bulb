@@ -1,3 +1,5 @@
+#include "params.h"
+
 #define BAUDRATE 115200
 #define LOOP_PERIOD_MS 20
 #define LOOP_PERIOD_MICROS 20000
@@ -39,12 +41,12 @@ void oneCyclePwmCtrl(Bulb *_bulbs, int _num, float _duty)
   if(time_on > 0){
     for(int i = 0; i < _num; i++)
     {
-      Serial.print(_bulbs[i].row);
-      Serial.print("\t");
-      Serial.print(_bulbs[i].col);
-      Serial.print("\t");
-      Serial.print(_bulbs[i].getId());
-      Serial.println();
+      // Serial.print(_bulbs[i].row);
+      // Serial.print("\t");
+      // Serial.print(_bulbs[i].col);
+      // Serial.print("\t");
+      // Serial.print(_bulbs[i].getId());
+      // Serial.println();
 
       digitalWrite(_bulbs[i].getId(), HIGH);
     }
@@ -64,34 +66,10 @@ void light(Bulb *_bulbs, int _num)
   int cnt = 0;
   while(1)
   {
-    oneCyclePwmCtrl(_bulbs, _num, 0.8);
+    oneCyclePwmCtrl(_bulbs, _num, duty_table[cnt]);
     cnt++;
-    if(cnt == 13)
-    {
+    if(cnt == 500)
       break;
-    }
-  }
-  cnt = 5;
-  while(1)
-  {
-    int max_cnt = 400;
-    oneCyclePwmCtrl(_bulbs, _num, 5 / (float)cnt);
-    cnt++;
-    if(cnt == max_cnt)
-    {
-      break;
-    }
-  }
-  cnt = 0;
-  while(1)
-  {
-    int max_cnt = 100;
-    oneCyclePwmCtrl(_bulbs, _num, (5 / (float)400) * ((float)max_cnt - cnt) / max_cnt);
-    cnt++;
-    if(cnt == max_cnt)
-    {
-      break;
-    }
   }
 }
 
