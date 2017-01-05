@@ -84,19 +84,37 @@ void setup() {
 
 void loop() {
   if(true){
-    bulb_pairs[0].spawn();
-
     int cnt = 0;
 
+
     while(1)
-    {  
-      oneCyclePwmCtrl(bulb_pairs, duty_table[cnt], duty_table[cnt + DUTY_TABLE_SIZE / 2]);
-      cnt++;
-      if(cnt == DUTY_TABLE_SIZE / 2)
+    {
+      if(random(2) == 1) // if(sensor)
       {
-        cnt = 0;
-        bulb_pairs[0].gen();
+        for(int i = 0; i < MAX_BULB_NUM; i++)
+        {
+          if(bulb_pairs[i].getState() == DEAD)
+          {
+            bulb_pairs[i].spawn();
+            break;
+          }
+        }
+      }
+      while(1)
+      {
+        oneCyclePwmCtrl(bulb_pairs, duty_table[cnt], duty_table[cnt + DUTY_TABLE_SIZE / 2]);
+        cnt++;
+        if(cnt == DUTY_TABLE_SIZE / 2)
+        {
+          cnt = 0;
+          for(int i = 0; i < MAX_BULB_NUM; i++)
+          {
+            bulb_pairs[i].gen();
+          }
+          break;
+        }
       }
     }
+
   }
 }
