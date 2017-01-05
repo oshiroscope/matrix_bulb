@@ -31,6 +31,18 @@ public:
 
 Bulb bulbs[MAX_BULB_NUM];
 
+void selectedDelay(int time)
+{
+  if(time < 16383)
+  {
+    delayMicroseconds(time);
+  }
+  else
+  {
+    delay(time / 1000);
+  }
+}
+
 // duty : 0.0 ~ 1.0
 void oneCyclePwmCtrl(Bulb *_bulbs, float _first_duty, float _second_duty)
 {
@@ -56,13 +68,7 @@ void oneCyclePwmCtrl(Bulb *_bulbs, float _first_duty, float _second_duty)
     }
   }
 
-  if(second_time_on < 16383)
-  {
-    delayMicroseconds(second_time_on);
-  }
-  else{
-    delay(second_time_on / 1000);
-  }
+  selectedDelay(second_time_on);
 
   for(int i = 0; i < MAX_BULB_NUM; i++)
   {
@@ -72,15 +78,8 @@ void oneCyclePwmCtrl(Bulb *_bulbs, float _first_duty, float _second_duty)
     }
   }
 
-  if((first_time_on - second_time_on) < 16383)
-  {
-    delayMicroseconds(first_time_on - second_time_on);
-  }
-  else{
-    delay((first_time_on - second_time_on) / 1000);
-  }
+  selectedDelay(first_time_on - second_time_on);
 
-  delay((first_time_on - second_time_on) / 1000);
   for(int i = 0; i < MAX_BULB_NUM; i++)
   {
     if(_bulbs[i].state == FIRST){
@@ -88,13 +87,7 @@ void oneCyclePwmCtrl(Bulb *_bulbs, float _first_duty, float _second_duty)
     }
   }
 
-  if(first_time_off < 16383)
-  {
-    delayMicroseconds(first_time_off);
-  }
-  else{
-    delay(first_time_off / 1000);
-  }
+  selectedDelay(first_time_off);
 }
 
 void setup() {
