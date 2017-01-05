@@ -6,6 +6,8 @@
 
 #define MAX_BULB_NUM 5
 
+#define LIFESPAN 5
+
 #define ROW 3
 #define COLUMN 10
 

@@ -24,10 +24,18 @@ void oneCyclePwmCtrl(BulbPair *_bulb_pairs, float _first_duty, float _second_dut
 
   for(int i = 0; i < MAX_BULB_NUM; i++)
   {
-    if(_bulb_pairs[i].is_enabled())
+    switch(_bulb_pairs[i].getState())
     {
-      digitalWrite(_bulb_pairs[i].first.getId(), HIGH);
-      digitalWrite(_bulb_pairs[i].second.getId(), HIGH);
+      case SPAWNED:
+        digitalWrite(_bulb_pairs[i].first.getId(), HIGH);
+        break;
+      case ALIVE:
+        digitalWrite(_bulb_pairs[i].first.getId(), HIGH);
+        digitalWrite(_bulb_pairs[i].second.getId(), HIGH);
+        break;
+      case DYING:
+        digitalWrite(_bulb_pairs[i].second.getId(), HIGH);
+        break;
     }
   }
 
@@ -35,9 +43,11 @@ void oneCyclePwmCtrl(BulbPair *_bulb_pairs, float _first_duty, float _second_dut
 
   for(int i = 0; i < MAX_BULB_NUM; i++)
   {
-    if(_bulb_pairs[i].is_enabled())
+    switch(_bulb_pairs[i].getState())
     {
-      digitalWrite(_bulb_pairs[i].second.getId(), LOW);
+      case ALIVE:
+      case DYING:
+        digitalWrite(_bulb_pairs[i].second.getId(), LOW);
     }
   }
 
@@ -45,8 +55,11 @@ void oneCyclePwmCtrl(BulbPair *_bulb_pairs, float _first_duty, float _second_dut
 
   for(int i = 0; i < MAX_BULB_NUM; i++)
   {
-    if(_bulb_pairs[i].is_enabled()){
-      digitalWrite(_bulb_pairs[i].first.getId(), LOW);
+    switch(_bulb_pairs[i].getState())
+    {
+      case SPAWNED:
+      case ALIVE:
+        digitalWrite(_bulb_pairs[i].first.getId(), LOW);
     }
   }
 
@@ -70,24 +83,13 @@ void setup() {
 }
 
 void loop() {
-  //if(sensor){
   if(true){
-    int row = random(ROW);
-    int col = random(COLUMN);
-    bulb_pairs[0].first.row = row;
-    bulb_pairs[0].first.col = col;
-
-    row = random(ROW);
-    col = random(COLUMN);
-    bulb_pairs[0].second.row = row;
-    bulb_pairs[0].second.col = col;
-
     bulb_pairs[0].spawn();
 
     int cnt = 0;
 
     while(1)
-    {
+    {  
       oneCyclePwmCtrl(bulb_pairs, duty_table[cnt], duty_table[cnt + DUTY_TABLE_SIZE / 2]);
       cnt++;
       if(cnt == DUTY_TABLE_SIZE / 2)
