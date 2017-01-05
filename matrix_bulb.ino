@@ -46,15 +46,9 @@ void selectedDelay(int time)
 // duty : 0.0 ~ 1.0
 void oneCyclePwmCtrl(Bulb *_bulbs, float _first_duty, float _second_duty)
 {
-  Serial.print(_first_duty); Serial.print("\t"); Serial.print(_second_duty); Serial.print("\t");
-  int first_time_on = LOOP_PERIOD_MICROS * _first_duty;
-  int first_time_off = LOOP_PERIOD_MICROS - first_time_on;
-
-  int second_time_on = LOOP_PERIOD_MICROS * _second_duty;
-  int second_time_off = LOOP_PERIOD_MICROS - second_time_on;
-
-  Serial.print(first_time_on ); Serial.print("\t"); Serial.print(second_time_on); Serial.print("\t");
-  Serial.print("\n");
+  int turn_off_second = LOOP_PERIOD_MICROS * _second_duty;
+  int turn_off_first = LOOP_PERIOD_MICROS * _first_duty - turn_off_second;
+  int last_wait = LOOP_PERIOD_MICROS - (turn_off_first + turn_off_second);
 
   for(int i = 0; i < MAX_BULB_NUM; i++)
   {
@@ -68,7 +62,7 @@ void oneCyclePwmCtrl(Bulb *_bulbs, float _first_duty, float _second_duty)
     }
   }
 
-  selectedDelay(second_time_on);
+  selectedDelay(turn_off_second);
 
   for(int i = 0; i < MAX_BULB_NUM; i++)
   {
@@ -78,7 +72,7 @@ void oneCyclePwmCtrl(Bulb *_bulbs, float _first_duty, float _second_duty)
     }
   }
 
-  selectedDelay(first_time_on - second_time_on);
+  selectedDelay(turn_off_first);
 
   for(int i = 0; i < MAX_BULB_NUM; i++)
   {
@@ -87,7 +81,7 @@ void oneCyclePwmCtrl(Bulb *_bulbs, float _first_duty, float _second_duty)
     }
   }
 
-  selectedDelay(first_time_off);
+  selectedDelay(last_wait);
 }
 
 void setup() {
